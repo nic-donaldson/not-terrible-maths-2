@@ -64,8 +64,6 @@ class HomeHandler(BaseHandler):
         # create room if room does not exist
         if room_name not in rooms:
             room = chat.Room(room_name, room_url)
-            # set user as admin of room
-            room.make_admin(user)
 
             # add to global rooms
             rooms[room_url] = room
@@ -94,21 +92,17 @@ class ChatWebSocket(BaseWSHandler):
         else:
             user = users[int(self.get_secure_cookie("user_id"))]
 
-            # close old socket
-            if user.connected and user.socket != None:
-                response = json.dumps({"type":"notification", "message":"You have reconnected elsewhere"})
-                user.socket.write_message(response)
-                user.socket.close()
-
             # update socket
             user.socket = self
 
-            # announce if not already connected
-            if not user.connected:
-                user.connected = True
-                response = json.dumps({"type":"user_join", "user":user.name})
-                for room in user.rooms:
-                    room.send_all_but(response, user)
+            # send list of users to new user
+            for other_user in user.room.users:
+                response = json.dumps({"type":"user_join", "user":other_user.name})
+                user.send_message(response)
+
+            # announce new user
+            response = json.dumps({"type":"user_join", "user":user.name})
+            user.room.send_all_but(response, user)
 
     def on_message(self, message):
         message = json.loads(message)
@@ -141,12 +135,15 @@ class ChatWebSocket(BaseWSHandler):
             user = users[user_id]
             user.socket = None
 
-            if not user.connected:
-                print("%s disconnected" % (user.name))
+            user.room.leave(user)
 
-                user.disconnect()
-                if user_id in users:
-                    del users[user_id]
+            print("%s disconnected" % (user.name))
+
+            response = json.dumps({"type":"user_leave", "user":user.name, "room":user.room.name})
+            user.room.send_all_but(response, user)
+
+            if user_id in users:
+                del users[user_id]
 
 settings = {
     "template_path": os.path.join(os.path.dirname(__file__), "templates"),

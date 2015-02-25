@@ -2,7 +2,6 @@ class Room:
     def __init__(self, name, url):
         self.name = name
         self.url = url
-        self.admins = []
         self.users = []
 
     def __contains__(self, user):
@@ -12,14 +11,6 @@ class Room:
     def leave(self, user):
         if user in self.users:
             self.users.remove(user)
-        if user in self.admins:
-            self.admins.remove(user)
-
-    def make_admin(self, user):
-        if user not in self.users:
-            self.users.append(user)
-        if user not in self.admins:
-            self.admins.append(user)
 
     # send a message to all users in the room
     def send_all(self, message):
@@ -41,8 +32,7 @@ class User:
     def __init__(self, name):
         self.name = name
         self.socket = None
-        self.rooms = []
-        self.connected = False
+        self.room = None
 
     def __str__(self):
         return self.name + ":" + str(self.socket)
@@ -51,10 +41,8 @@ class User:
         self.socket.write_message(message)
 
     def disconnect(self):
-        for room in self.rooms:
-            room.leave(self)
+        socket.close()
 
     def join(self, room):
-        if room not in self.rooms:
-            self.rooms.append(room)
         room.add_user(self)
+        self.room = room

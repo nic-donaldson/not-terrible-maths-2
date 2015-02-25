@@ -1,6 +1,7 @@
 var ws;
 var url = "ws://localhost:8888/connect";
 var room = "";
+var users = [];
 
 window.onload = function() {
     ws = new WebSocket(url);
@@ -33,13 +34,24 @@ window.onload = function() {
 
         } else if (message.type === "user_join") {
             var user = message.user;
+            users.push(user);
 
             var elem = document.createElement("li");
+            elem.id = "user:" + user
             elem.appendChild(document.createTextNode(user));
 
             var userbox = document.getElementById("userbox");
             userbox.appendChild(elem);
 
+        } else if (message.type === "user_leave") {
+            var user = message.user;
+            var index = users.indexOf(message.user);
+            if (index > -1) {
+                users.splice(index, 1);
+            }
+
+            var elem = document.getElementById("user:"+user);
+            elem.parentNode.removeChild(elem);
         } else if (message.type === "notification") {
             alert(message.message);
         }
