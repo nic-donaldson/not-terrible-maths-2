@@ -31,7 +31,7 @@ window.onload = function() {
             var messagebox = document.getElementById("messagebox");
             messagebox.insertBefore(elem, messagebox.firstChild);
 
-        } else if (message.type === "new_user") {
+        } else if (message.type === "user_join") {
             var user = message.user;
 
             var elem = document.createElement("li");

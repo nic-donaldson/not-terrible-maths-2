@@ -34,63 +34,81 @@ class HomeHandler(BaseHandler):
         if not self.current_user:
             self.render("home.html") 
         else:
-            self.set_header("Content-Type", "text/plain")
-            self.write("fark")
+            # see if user still exists
+            uid = int(self.get_secure_cookie("user_id"))
+            username = self.get_secure_cookie("username")
+            if uid not in users or users[uid].name != username:
+                self.clear_cookie("user_id")
+                self.clear_cookie("username")
+                self.redirect("/")
+            else:
+                self.set_header("Content-Type", "text/plain")
+                self.write("Hello " + username)
 
     def post(self):
+
         # create user
-        user = chat.User(
-                tornado.escape.xhtml_escape(self.get_body_argument("username")),
-                None
-        )
+        room_name = tornado.escape.xhtml_escape(self.get_body_argument("room_name"))
+        room_url = tornado.escape.url_escape(self.get_body_argument("room_name"))
+        username = tornado.escape.xhtml_escape(self.get_body_argument("username"))
+        user = chat.User(username)
+
         # give user id
         global user_id
         user_id += 1
         self.set_secure_cookie("user_id", str(user_id))
-        self.set_secure_cookie("username", tornado.escape.xhtml_escape(self.get_body_argument("username")))
+        self.set_secure_cookie("username", username)
 
         users[user_id] = user
 
         # create room if room does not exist
-        room_name = tornado.escape.url_escape(self.get_body_argument("room_name"))
         if room_name not in rooms:
-            room = chat.Room(
-                    tornado.escape.url_escape(self.get_body_argument("room_name"))
-            )
+            room = chat.Room(room_name, room_url)
             # set user as admin of room
-            room.admins.append(user)
-            rooms[room_name] = room
+            room.make_admin(user)
+
+            # add to global rooms
+            rooms[room_url] = room
         else:
             # room already exists, add user to it
-            room = rooms[room_name]
+            room = rooms[room_url]
 
-        user.rooms.append(room)
-        room.users.append(user)
-        self.redirect("/chat/"+room_name)
+        user.join(room) 
+        self.redirect("/chat/"+room_url)
 
 class RoomHandler(BaseHandler):
-    def get(self, room_name):
-        room = rooms[room_name]
-        self.render("room.html", room=room) 
+    def get(self, room_url):
+        if room_url in rooms and self.current_user:
+            room = rooms[room_url]
+            self.render("room.html", room=room) 
+        else:
+            self.redirect("/")
 
 class ChatWebSocket(BaseWSHandler):
     def open(self):
         print("WebSocket opened")
 
         if not self.current_user:
-            self.write_message(json.dumps({"type":"notification", "message":"no nickname found"}))
+            self.write_message(json.dumps({"type":"notification", "message":"You are not a registered user, do you have cookies enabled?"}))
             self.close()
         else:
-            # save socket
             user = users[int(self.get_secure_cookie("user_id"))]
+
+            # close old socket
+            if user.connected and user.socket != None:
+                response = json.dumps({"type":"notification", "message":"You have reconnected elsewhere"})
+                user.socket.write_message(response)
+                user.socket.close()
+
+            # update socket
             user.socket = self
 
-            # announce new user to all rooms they're in
-            response = {"type":"new_user", "user":user.name}
-            for room in user.rooms:
-                room.send_all_but(json.dumps(response), user)
-
-
+            # announce if not already connected
+            if not user.connected:
+                user.connected = True
+                response = json.dumps({"type":"user_join", "user":user.name})
+                for room in user.rooms:
+                    room.send_all_but(response, user)
 
     def on_message(self, message):
         message = json.loads(message)
@@ -102,27 +120,40 @@ class ChatWebSocket(BaseWSHandler):
             room = rooms[room_name]
 
             if user not in room:
-                response = {"type":"notification", "message":"you are not in this room"}
-                self.write_message(json.dumps(response))
+                response = json.dumps({"type":"notification", "message":"You are not in this room, disconnecting"})
+                self.write_message(response)
                 self.close()
             else:
                 print("(%s) %s: %s" % (room_name, user.name, message["message"]))
                 # send message to everyone in room!
-                response = {"type":"chat_message", "user":user.name, "message":message["message"]}
-                for other_user in room.users:
-                    other_user.socket.write_message(json.dumps(response))
+                response = json.dumps({"type":"chat_message", "user":user.name, "message":message["message"]})
+                room.send_all(response)
         else:
-            response = {"type":"notification", "message":u"You said: " + message}
-            self.write_message(json.dumps(response))
+            json.dumps(response = {"type":"error", "message":u"I don't know what that means, sorry!"})
+            self.write_message(response)
 
     def on_close(self):
-        print("WebSocket closed")
+        print("Websocket closed")
+        # remove user from rooms if not connected
+        # remove from users
+        if self.current_user:
+            user_id = int(self.get_secure_cookie("user_id"))
+            user = users[user_id]
+            user.socket = None
+
+            if not user.connected:
+                print("%s disconnected" % (user.name))
+
+                user.disconnect()
+                if user_id in users:
+                    del users[user_id]
 
 settings = {
     "template_path": os.path.join(os.path.dirname(__file__), "templates"),
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "cookie_secret":"yumyumc00k135",
     "xsrf_cookies": True,
+    "debug": True
 }
 
 application = tornado.web.Application([
