@@ -1,10 +1,15 @@
 var ws;
-var url = "ws://localhost:8888/connect";
+var port = 8888;
 var room = "";
 var users = [];
 
+
 window.onload = function() {
-    ws = new WebSocket(url);
+    if (document.location.hostname != "") {
+        ws = new WebSocket('ws://' + document.location.hostname + ':' + port + '/connect', []);
+    } else {
+        ws = new WebSocket('ws://localhost:' + port + '/connect', []);
+    }
 
     ws.onopen = function() {
         // get room name
@@ -17,41 +22,13 @@ window.onload = function() {
         var message = JSON.parse(evt.data);
 
         if (message.type === "chat_message") {
-            var elem = document.createElement("li");
-
-            var child = document.createElement("div");
-            child.className = "user";
-            child.innerHTML = message.user;
-            elem.appendChild(child);
-
-            child = document.createElement("div");
-            child.className = "message";
-            render_math_from_message(message.message,child);
-            elem.appendChild(child);
-
-            var messagebox = document.getElementById("messagebox");
-            messagebox.insertBefore(elem, messagebox.firstChild);
-
+            receive_message(message);
         } else if (message.type === "user_join") {
-            var user = message.user;
-            users.push(user);
-
-            var elem = document.createElement("li");
-            elem.id = "user:" + user
-            elem.appendChild(document.createTextNode(user));
-
-            var userbox = document.getElementById("userbox");
-            userbox.appendChild(elem);
-
+            user_join(message);
         } else if (message.type === "user_leave") {
-            var user = message.user;
-            var index = users.indexOf(message.user);
-            if (index > -1) {
-                users.splice(index, 1);
-            }
-
-            var elem = document.getElementById("user:"+user);
-            elem.parentNode.removeChild(elem);
+            user_leave(message);
+        } else if (message.type === "new_nick") {
+            new_nick(message);
         } else if (message.type === "notification") {
             alert(message.message);
         }
@@ -60,6 +37,11 @@ window.onload = function() {
     document.getElementById("msg_form").addEventListener('submit', function (evt) {
         evt.preventDefault();
         send_message();
+    });
+
+    document.getElementById("nick_form").addEventListener('submit', function(evt) {
+        evt.preventDefault();
+        set_nickname();
     });
 }
 
@@ -91,8 +73,62 @@ function render_math_from_message(msg, element, clear) {
     element.appendChild(document.createTextNode(msg.substring(prev_index, msg.length)));
 }
 
+function set_nickname() {
+    var field = document.getElementById("nick");
+    ws.send(JSON.stringify({"type":"nickname", "nickname":field.value}));
+}
+
 function send_message() {
     var field = document.getElementById("msg");
     ws.send(JSON.stringify({"type":"chat_message", "room":room, "message":field.value}));
     field.value = "";
+}
+
+function receive_message(message) {
+    var elem = document.createElement("li");
+
+    var child = document.createElement("div");
+    child.className = "user";
+    child.innerHTML = message.user;
+    elem.appendChild(child);
+
+    child = document.createElement("div");
+    child.className = "message";
+    render_math_from_message(message.message,child);
+    elem.appendChild(child);
+
+    var messagebox = document.getElementById("messagebox");
+    messagebox.insertBefore(elem, messagebox.firstChild);
+}
+
+function user_join(message) {
+    var user = message.user;
+    users.push(user);
+
+    var elem = document.createElement("li");
+    elem.id = "user:" + user
+    elem.appendChild(document.createTextNode(user));
+
+    var userbox = document.getElementById("userbox");
+    userbox.appendChild(elem);
+}
+
+function user_leave(message) {
+    var user = message.user;
+    var index = users.indexOf(message.user);
+    if (index > -1) {
+        users.splice(index, 1);
+    }
+
+    var elem = document.getElementById("user:"+user);
+    elem.parentNode.removeChild(elem);
+}
+
+function new_nick(message) {
+    var old_nick = message.old_nick;
+    var new_nick = message.new_nick;
+
+    var elem = document.getElementById("user:" + old_nick);
+    elem.innerHTML = new_nick;
+    elem.id = "user:" + new_nick;
 }

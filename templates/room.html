@@ -15,10 +15,10 @@
 
         <h2>{{ room.name }}</h2>
 
-        <a href="wow" id="settings">
+        <!--<a href="wow" id="settings">
             <img src="http://cdn.flaticon.com/png/256/17789.png" width="20px">
             <div>Settings</div>
-        </a>
+            </a>-->
 
         <ul id="messagebox">
         </ul>
@@ -39,6 +39,11 @@
             <input type="text" id="msg">
             <button id="msg_button">Send message!</button>
         </form> 
+
+        <form id="nick_form">
+            <input type="text" id="nick">
+            <button id="nick_button">Set nickname!</button>
+        </form>
 
         <script src="{{ static_url("js/katex/katex.min.js") }}"></script>
         <script src="{{ static_url("js/room.js") }}"></script>

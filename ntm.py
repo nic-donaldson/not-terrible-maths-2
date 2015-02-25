@@ -8,15 +8,16 @@ import chat
 
 users = {}
 rooms = {} 
+callbacks = {}
 user_id = 0
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
-        return self.get_secure_cookie("username")
+        return self.get_secure_cookie("user_id")
 
 class BaseWSHandler(tornado.websocket.WebSocketHandler):
     def get_current_user(self):
-        return self.get_secure_cookie("username")
+        return self.get_secure_cookie("user_id")
 
 class Debuggerino(BaseHandler):
     def get(self):
@@ -36,14 +37,13 @@ class HomeHandler(BaseHandler):
         else:
             # see if user still exists
             uid = int(self.get_secure_cookie("user_id"))
-            username = self.get_secure_cookie("username")
-            if uid not in users or users[uid].name != username:
+            if uid not in users:
                 self.clear_cookie("user_id")
                 self.clear_cookie("username")
                 self.redirect("/")
             else:
                 self.set_header("Content-Type", "text/plain")
-                self.write("Hello " + username)
+                self.write("Hello " + users[uid].name)
 
     def post(self):
 
@@ -62,7 +62,7 @@ class HomeHandler(BaseHandler):
         users[user_id] = user
 
         # create room if room does not exist
-        if room_name not in rooms:
+        if room_url not in rooms:
             room = chat.Room(room_name, room_url)
 
             # add to global rooms
@@ -72,45 +72,63 @@ class HomeHandler(BaseHandler):
             room = rooms[room_url]
 
         user.join(room) 
+        print("Redirecting to: %s" % ("/chat/" + room_url))
         self.redirect("/chat/"+room_url)
 
 class RoomHandler(BaseHandler):
     def get(self, room_url):
-        if room_url in rooms and self.current_user:
+
+        print(room_url)
+        room_url = tornado.escape.url_escape(room_url) # this is dumb why do I need this why tornado
+        print(room_url)
+
+        if room_url in rooms:
             room = rooms[room_url]
+            if not self.current_user or self.current_user and not int(self.get_secure_cookie("user_id")) in users:
+                # give guest name and option to set nickname!
+                global user_id
+                user_id += 1
+                user = chat.User("Guest" + str(user_id))
+                self.set_secure_cookie("user_id", str(user_id))
+                self.set_secure_cookie("username", user.name)
+                users[user_id] = user
+                user.join(room)
+
             self.render("room.html", room=room) 
         else:
             self.redirect("/")
+
 
 class ChatWebSocket(BaseWSHandler):
     def open(self):
         print("WebSocket opened")
 
         if not self.current_user:
-            self.write_message(json.dumps({"type":"notification", "message":"You are not a registered user, do you have cookies enabled?"}))
+            self.write_message(json.dumps({"type":"error", "message":"Your cookies are not set"}))
             self.close()
+
         else:
-            user = users[int(self.get_secure_cookie("user_id"))]
+            user_id = int(self.get_secure_cookie("user_id"))
+            if user_id in users:
+                user = users[user_id]
 
-            # update socket
-            user.socket = self
+                # update socket
+                user.socket = self
 
-            # send list of users to new user
-            for other_user in user.room.users:
-                response = json.dumps({"type":"user_join", "user":other_user.name})
-                user.send_message(response)
+                # announce
+                for other_user in user.room.users:
+                    user.send_message(json.dumps({"type":"user_join", "user":other_user.name}))
+                user.room.send_all_but(json.dumps({"type":"user_join", "user": user.name}), user)
 
-            # announce new user
-            response = json.dumps({"type":"user_join", "user":user.name})
-            user.room.send_all_but(response, user)
+
 
     def on_message(self, message):
         message = json.loads(message)
+        user_id = int(self.get_secure_cookie("user_id"))
+        user = users[user_id]
 
         if message["type"] == "chat_message":
             room_name = message["room"]
-            user_id = int(self.get_secure_cookie("user_id"))
-            user = users[user_id]
             room = rooms[room_name]
 
             if user not in room:
@@ -122,6 +140,13 @@ class ChatWebSocket(BaseWSHandler):
                 # send message to everyone in room!
                 response = json.dumps({"type":"chat_message", "user":user.name, "message":message["message"]})
                 room.send_all(response)
+        elif message["type"] == "nickname":
+            new_nick = message["nickname"]
+            old_nick = user.name
+            user.name = new_nick
+            response = json.dumps({"type":"new_nick", "old_nick":old_nick, "new_nick":new_nick})
+            user.room.send_all(response)
+
         else:
             json.dumps(response = {"type":"error", "message":u"I don't know what that means, sorry!"})
             self.write_message(response)
@@ -130,7 +155,7 @@ class ChatWebSocket(BaseWSHandler):
         print("Websocket closed")
         # remove user from rooms if not connected
         # remove from users
-        if self.current_user:
+        if self.current_user and int(self.get_secure_cookie("user_id")) in users:
             user_id = int(self.get_secure_cookie("user_id"))
             user = users[user_id]
             user.socket = None
