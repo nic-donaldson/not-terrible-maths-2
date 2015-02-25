@@ -1,10 +1,14 @@
 var ws;
 var url = "ws://localhost:8888/connect";
+var room = "";
 
 window.onload = function() {
     ws = new WebSocket(url);
 
     ws.onopen = function() {
+        // get room name
+        var room_re = /\/([^\/]*)$/;
+        room = room_re.exec(window.location)[1];
     };
 
     ws.onmessage = function (evt) {
@@ -26,6 +30,15 @@ window.onload = function() {
 
             var messagebox = document.getElementById("messagebox");
             messagebox.insertBefore(elem, messagebox.firstChild);
+
+        } else if (message.type === "new_user") {
+            var user = message.user;
+
+            var elem = document.createElement("li");
+            elem.appendChild(document.createTextNode(user));
+
+            var userbox = document.getElementById("userbox");
+            userbox.appendChild(elem);
 
         } else if (message.type === "notification") {
             alert(message.message);
@@ -68,6 +81,6 @@ function render_math_from_message(msg, element, clear) {
 
 function send_message() {
     var field = document.getElementById("msg");
-    ws.send(JSON.stringify({"type":"chat_message", "message":field.value}));
+    ws.send(JSON.stringify({"type":"chat_message", "room":room, "message":field.value}));
     field.value = "";
 }

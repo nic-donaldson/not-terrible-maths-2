@@ -14,8 +14,14 @@
 
         <form method="POST">
             {% module xsrf_form_html() %}
-            <label>Room name</label>
-            <input type="text" name="room_name">
+            <div>
+                <label>Room name</label>
+                <input type="text" name="room_name">
+            </div>
+            <div>
+                <label>Your name</label>
+                <input type="text" name="username">
+            </div>
             <button type="submti">+Create Room</button>
         </form>
 

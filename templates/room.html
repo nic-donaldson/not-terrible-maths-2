@@ -13,7 +13,7 @@
     <body>
         <h1>Not Terrible Maths</h1>
 
-        <h2>{{ room_name }}</h2>
+        <h2>{{ room.name }}</h2>
 
         <a href="wow" id="settings">
             <img src="http://cdn.flaticon.com/png/256/17789.png" width="20px">
@@ -21,6 +21,14 @@
         </a>
 
         <ul id="messagebox">
+        </ul>
+
+        <ul id="userbox">
+            {% for user in room.users %}
+                <li>{{ user.name }}</li>
+            {% end %}
+        </ul>
+
         </ul>
 
         <h3>equations</h3>
