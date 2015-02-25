@@ -4,16 +4,16 @@
     <head>
         <meta charset="utf-8">
 
-        <link rel="stylesheet" type="text/css" href="home.css">
-        <link rel="stylesheet" type="text/css" href="room.css">
-        <link rel="stylesheet" type="text/css" href="js/katex/katex.min.css">
+        <link rel="stylesheet" type="text/css" href="{{ static_url("css/home.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ static_url("css/room.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ static_url("js/katex/katex.min.css") }}">
         <title>NTM Chat Room</title>
     </head>
 
     <body>
         <h1>Not Terrible Maths</h1>
 
-        <h2>#euler</h2>
+        <h2>{{ room_name }}</h2>
 
         <a href="wow" id="settings">
             <img src="http://cdn.flaticon.com/png/256/17789.png" width="20px">
@@ -21,18 +21,6 @@
         </a>
 
         <ul id="messagebox">
-            <li>
-                <div class="user">Nic</div>
-                <div class="message"></div>
-            </li>
-            <li>
-                <div class="user">Josh</div>
-                <div class="message">Wow!</div>
-            </li>
-            <li>
-                <div class="user">Sam</div>
-                <div class="message">Oh my God Becky</div>
-            </li>
         </ul>
 
         <h3>equations</h3>
@@ -42,12 +30,12 @@
             </li>
         </ul>
 
-        <form>
+        <form id="msg_form">
             <input type="text" id="msg">
             <button id="msg_button">Send message!</button>
         </form> 
 
-        <script src="js/katex/katex.min.js"></script>
-        <script src="js/room.js"></script>
+        <script src="{{ static_url("js/katex/katex.min.js") }}"></script>
+        <script src="{{ static_url("js/room.js") }}"></script>
     </body>
 </html>

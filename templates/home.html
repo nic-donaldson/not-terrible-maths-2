@@ -12,8 +12,10 @@
     <body>
         <h1>Not Terrible Maths</h1>
 
-        <form action="handler" method="post">
-            <input type="text" id="name" placeholder="Name...">
+        <form method="POST">
+            {% module xsrf_form_html() %}
+            <label>Room name</label>
+            <input type="text" name="room_name">
             <button type="submti">+Create Room</button>
         </form>
 
