@@ -2,9 +2,34 @@
 
 body {
     font-family: 'Open Sans', sans-serif;
+    background-color:#F4F4F4;
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: 400;
 }
 
+#ui {
+    background-color:#FFFFFF;
+}
+
+
+#info {
+    font-size: 2em;
+}
+
+#info .math {
+    margin-top:0.5em;
+}
+
+#equationdemo {
+    text-align:center;
+}
+
+#equationdemo .math {
+    color:green;
+}
+
+#equationdemo .latex {
+    color:red;
+}

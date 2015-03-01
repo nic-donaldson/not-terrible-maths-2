@@ -73,7 +73,7 @@ class HomeHandler(BaseHandler):
 
         user.join(room) 
         print("Redirecting to: %s" % ("/chat/" + room_url))
-        self.redirect("/chat/"+room_url)
+        self.redirect("/chat/%s" % room_url)
 
 class RoomHandler(BaseHandler):
     def get(self, room_url):
@@ -180,7 +180,7 @@ settings = {
 
 application = tornado.web.Application([
     (r"/", HomeHandler),
-    (r"/chat/([^/]+)", RoomHandler),
+    (r"/chat/([^/]+)$", RoomHandler),
     (r"/connect", ChatWebSocket),
     (r"/checker", UserChecker),
     (r"/debug", Debuggerino),
