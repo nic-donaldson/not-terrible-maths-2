@@ -1,0 +1,45 @@
+@import 'base';
+
+#messagebox, #userbox {
+    height: 400px;
+
+    overflow-y: auto;
+
+    background-color: #FFF;
+
+    border: solid 1px #CFCFCF;
+}
+
+#messages, #userlist {
+    list-style-type: none;
+}
+
+#messages {
+
+    padding: 0.25rem 0px 0px 0px;
+    margin: 0px;
+    max-width: initial;
+
+    li {
+        border-bottom: 1px solid #F4F4F4;
+    }
+
+    .user, .message {
+        padding-left: 1.11rem;
+        padding-right: 1.11rem;
+    }
+
+    .user {
+        font-weight:bold;
+    }
+
+    .message {
+        word-break:break-all;
+        
+    }
+
+}
+
+#boxes {
+    margin-bottom: 1.11rem;
+}

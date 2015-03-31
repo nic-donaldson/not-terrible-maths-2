@@ -79,8 +79,6 @@ class RoomHandler(BaseHandler):
     def get(self, room_url):
 
         print(room_url)
-        room_url = tornado.escape.url_escape(room_url) # this is dumb why do I need this why tornado
-        print(room_url)
 
         if room_url in rooms:
             room = rooms[room_url]

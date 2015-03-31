@@ -1,51 +1,67 @@
-<!doctype html>
+{% extends "base.html %}
 
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
+{% block head_style %}
+    <link rel="stylesheet" type="text/css" href="{{ static_url("css/room.css") }}">
+{% end %}
 
-        <link rel="stylesheet" type="text/css" href="{{ static_url("css/home.css") }}">
-        <link rel="stylesheet" type="text/css" href="{{ static_url("css/room.css") }}">
-        <link rel="stylesheet" type="text/css" href="{{ static_url("js/katex/katex.min.css") }}">
-        <title>NTM Chat Room</title>
-    </head>
+{% block title %}
+    NTM Chat Room
+{% end %}
 
-    <body>
-        <h1>Not Terrible Maths</h1>
+{% block body %}
 
-        <h2>{{ room.name }}</h2>
+    <div class="row">
+        <div class="large-12 columns">
+            <h1>Not Terrible Maths</h1>
+        </div>
+    </div>
 
-        <!--<a href="wow" id="settings">
-            <img src="http://cdn.flaticon.com/png/256/17789.png" width="20px">
-            <div>Settings</div>
-            </a>-->
+    <div class="row">
+        <div class="large-12 columns">
+            <h2>{{ room.name }}</h2>
+        </div>
+    </div>
 
-        <ul id="messagebox">
-        </ul>
+    <div class="row" id="boxes">
+        <div class="large-8 columns">
+            <div id="messagebox">
+                <ul id="messages">
+                </ul>
+            </div>
+        </div>
 
-        <ul id="userbox">
-        </ul>
+        <div class="large-4 columns">
+            <div id="userbox">
+                <ul id="userlist">
+                </ul>
+            </div>
+        </div>
+    </div>
 
-        </ul>
-
-        <h3>equations</h3>
-        <ul id="equations">
-            <li class="equation">
-                e^(i*pi) = -1
-            </li>
-        </ul>
-
+    <div class="row">
         <form id="msg_form">
-            <input type="text" id="msg">
-            <button id="msg_button">Send message!</button>
+            <div class="small-9 columns">
+                <input type="text" id="msg">
+            </div>
+            <div class="small-3 columns">
+                <button id="msg_button">Send message!</button>
+            </div>
         </form> 
+    </div>
 
+    <div class="row">
         <form id="nick_form">
-            <input type="text" id="nick">
-            <button id="nick_button">Set nickname!</button>
+            <div class="small-9 columns">
+                <input type="text" id="nick">
+            </div>
+            <div class="small-3 columns">
+                <button id="nick_button">Set nickname!</button>
+            </div>
         </form>
+    </div>
+{% end %}
 
-        <script src="{{ static_url("js/katex/katex.min.js") }}"></script>
-        <script src="{{ static_url("js/room.js") }}"></script>
-    </body>
-</html>
+
+{% block end_body_scripts %}
+    <script src="{{ static_url("js/room.js") }}"></script>
+{% end %}

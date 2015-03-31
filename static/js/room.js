@@ -80,8 +80,11 @@ function set_nickname() {
 
 function send_message() {
     var field = document.getElementById("msg");
-    ws.send(JSON.stringify({"type":"chat_message", "room":room, "message":field.value}));
-    field.value = "";
+    var msg = field.value;
+    if (msg !== "") {
+        ws.send(JSON.stringify({"type":"chat_message", "room":room, "message":field.value}));
+        field.value = "";
+    }
 }
 
 function receive_message(message) {
@@ -97,7 +100,7 @@ function receive_message(message) {
     render_math_from_message(message.message,child);
     elem.appendChild(child);
 
-    var messagebox = document.getElementById("messagebox");
+    var messagebox = document.getElementById("messages");
     messagebox.insertBefore(elem, messagebox.firstChild);
 }
 
@@ -109,7 +112,7 @@ function user_join(message) {
     elem.id = "user:" + user
     elem.appendChild(document.createTextNode(user));
 
-    var userbox = document.getElementById("userbox");
+    var userbox = document.getElementById("userlist");
     userbox.appendChild(elem);
 }
 

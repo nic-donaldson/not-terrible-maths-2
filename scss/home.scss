@@ -1,0 +1,21 @@
+@import 'base';
+
+#ui {
+    background-color: #FFFFFF;
+}
+
+#info {
+    font-size: 2em;
+}
+
+#equationdemo {
+    text-align:center;
+
+    .math {
+        color:green;
+    }
+
+    .latex {
+        color:red;
+    }
+}

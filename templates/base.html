@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="icon" type="image/png" href="{{ static_url("favicon.png")}}">
+        <link rel="stylesheet" type="text/css" href="{{ static_url("css/normalize.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ static_url("css/foundation.min.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ static_url("js/katex/katex.min.css") }}">
+
+        {% block head_style %}
+        {% end %}
+
+        <title>{% block title %}Default tityle {% end %}</title>
+    </head>
+    <body>
+        {% block body %}
+        {% end %}
+
+        <script src="{{ static_url("js/katex/katex.min.js") }}"></script>
+        {% block end_body_scripts %}
+        {% end %}
+    </body>
+</html>

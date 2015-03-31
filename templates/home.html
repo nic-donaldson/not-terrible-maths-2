@@ -1,74 +1,65 @@
-<!doctype html>
+{% extends "base.html" %}
 
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block head_style %}
+    <link rel="stylesheet" type="text/css" href="{{ static_url("css/home.css") }}">
+{% end %}
 
-        <link rel="icon" type="image/png" href="{{ static_url("favicon.png") }}">
+{% block title %}
+    Let's all go to the lobby
+{% end %}
 
-        <link rel="stylesheet" type="text/css" href="{{ static_url("css/normalize.css") }}">
-        <link rel="stylesheet" type="text/css" href="{{ static_url("css/foundation.min.css") }}">
-        <link rel="stylesheet" type="text/css" href="{{ static_url("js/katex/katex.min.css") }}">
-        <link rel="stylesheet" type="text/css" href="{{ static_url("css/home.css") }}">
+{% block body %}
+    <section id="ui">
+        <div class="row">
+            <div class="large-12 columns">
+                <h1>Not Terrible Maths</h1>
+            </div>
+        </div>
 
-
-        <title>Let's all go the lobby</title>
-    </head>
-
-    <body>
-
-        <section id="ui">
+        <form method="POST">
+            {% module xsrf_form_html() %}
             <div class="row">
-                <div class="large-12 columns">
-                    <h1>Not Terrible Maths</h1>
+                <div class="large-4 columns">
+                    <label>Room name</label>
+                    <input type="text" name="room_name">
+                    <label>Your name</label>
+                    <input type="text" name="username">
+                </div>
+            </div>
+            <div class="row">
+                <div class="small-12 columns">
+                    <button type="submit">Create or join a room</button>
                 </div>
             </div>
 
-            <form method="POST">
-                {% module xsrf_form_html() %}
-                <div class="row">
-                    <div class="large-4 columns">
-                        <label>Room name</label>
-                        <input type="text" name="room_name">
-                        <label>Your name</label>
-                        <input type="text" name="username">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="small-12 columns">
-                        <button type="submit">+Create/Join Room</button>
-                    </div>
-                </div>
+        </form>
+    </section>
 
-            </form>
-        </section>
+    <section id="info">
+        <div class="row">
+            <h2>Chat with integrated LaTeX!</h2>
+        </div>
+        <div class="row">
+            <div class="large-6 columns">
+                <p>Discussing maths online is painful without
+                standard notation. &ldquo;d/dx&rdquo;,
+                &ldquo;int_0^1&rdquo;, and
+                &ldquo;{1,2,3;4,5,6}&rdquo; don't cut it. All
+                of these and more can be expressed with
+                TeX, the standard for typesetting mathematics.</p>
 
-        <section id="info">
-            <div class="row">
-                <h2>Chat with integrated LaTeX!</h2>
+                <p>Chat with others using TeX to display maths.</p>
             </div>
-            <div class="row">
-                <div class="large-6 columns">
-                    <p>Whether discussing maths online for assignments, study,
-                    or general interest, it is difficult to communicate succinctly
-                    without access to the great maths notation normally used
-                    to represent ideas, objects, and equations. Trying to
-                    express derivatives, integrals, and matrices is painful.
-                    &ldquo;d/dx&rdquo;, &ldquo;int_0^1&rdquo; and &ldquo;{1,2,3;4,5,6}&rdquo;
-                    don't cut it.</p>
-                </div>
 
-                <div id="equationdemo" class="large-6 large-centred columns">
-                    <div>
-                        <span class="latex">$e^{i\pi} = -1$</span> becomes <span class="math">e^{i\pi} = -1</span>
-                    </div>
+            <div id="equationdemo" class="large-6 large-centred columns">
+                <div>
+                    <span class="latex">$e^{i\pi} = -1$</span> becomes <span class="math">e^{i\pi} = -1</span>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
+{% end %}
 
-
-        <script src="{{ static_url("js/katex/katex.min.js") }}"></script>
-        <script src="{{ static_url("js/home.js") }}"></script>
-    </body>
-</html>
+{% block end_body_scripts %}
+    <script src="{{ static_url("js/home.js") }}"></script>
+{% end %}
