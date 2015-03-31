@@ -1,4 +1,5 @@
 import os
+import configparser
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
@@ -10,6 +11,9 @@ users = {}
 rooms = {} 
 callbacks = {}
 user_id = 0
+
+config = configparser.ConfigParser()
+config.read("config.ini")
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -171,9 +175,9 @@ class ChatWebSocket(BaseWSHandler):
 settings = {
     "template_path": os.path.join(os.path.dirname(__file__), "templates"),
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
-    "cookie_secret":"yumyumc00k135",
+    "cookie_secret":config['secrets']['cookie'],
     "xsrf_cookies": True,
-    "debug": True
+    "debug":config['config']['debugging'] 
 }
 
 application = tornado.web.Application([
@@ -186,5 +190,5 @@ application = tornado.web.Application([
 ], **settings)
 
 if __name__ == "__main__":
-    application.listen(8888)
+    application.listen(int(config['networking']['port']))
     tornado.ioloop.IOLoop.instance().start()
